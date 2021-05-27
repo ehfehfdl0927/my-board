@@ -8,7 +8,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 //@RestController
 @Controller
@@ -88,6 +90,15 @@ public class BoardListController {
         model.addAttribute("url","board");
         return "alert";
 
+    }
+
+    @PostMapping("/search_list")
+    public String BoardSearch(SearchForm form, Model model) throws Exception{
+        String search_option = form.getSearch_option();
+        String keyword = form.getKeyword();
+        List<BoardVO> board = boardMapper.boardSearch(search_option, keyword);
+        model.addAttribute("board",board);
+        return "search";
     }
 
 

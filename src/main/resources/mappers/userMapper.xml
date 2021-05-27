@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD MAPPER 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kimjoohe.myboard.mapper.UserMapper">
+    <insert id="userJoin" parameterType="kimjoohe.myboard.domain.userVO">
+        insert into user_pro
+        values
+            (#{userID},#{userPassword},#{userEmail})
+    </insert>
+    <select id="idChk" parameterType="String" resultType="int">
+        select count(*) from user_pro where userID = #{userID}
+    </select>
+</mapper>

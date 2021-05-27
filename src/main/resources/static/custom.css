@@ -1,0 +1,15 @@
+thead th {
+    background-color: #006DCC;
+    color: white;
+    text-align: center;
+}
+tr td:first-child,
+tr th:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
+tr td:last-child,
+tr th:last-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+}

@@ -16,6 +16,7 @@ public interface BoardMapper {
     public void boardUpdate(BoardVO board) throws Exception;
     public void boardDelete(int bno) throws Exception;
     public List<BoardVO> boardSearch(@Param("search_option") String search_option, @Param("keyword") String keyword) throws Exception;
+    public void boardHit(int bno) throws Exception;
     //public void userJoin(userVO user) throws Exception;
     //public int idChk(String userID) throws Exception;
 }

@@ -12,7 +12,7 @@
 
 
     <select id="boardList" resultType="kimjoohe.myboard.domain.BoardVO">
-        select * from board_pro
+        select * from board_pro order by bno desc
     </select>
 
     <select id="boardView" resultType="kimjoohe.myboard.domain.BoardVO" >
@@ -34,15 +34,19 @@
         <choose >
             <when test="search_option == 'all'">
 
-                where writer like CONCAT('%',#{keyword},'%')
-                or subject like CONCAT('%',#{keyword},'%')
-                or content like CONCAT('%',#{keyword},'%')
+                where writer like CONCAT('%',#{keyword},'%') order by bno desc
+                or subject like CONCAT('%',#{keyword},'%') order by bno desc
+                or content like CONCAT('%',#{keyword},'%') order by bno desc
             </when>
             <otherwise>
-                where ${search_option} like CONCAT('%',#{keyword},'%')
+                where ${search_option} like CONCAT('%',#{keyword},'%') order by bno desc
             </otherwise>
         </choose>
     </select>
+
+    <update id="boardHit" parameterType="int">
+        update board_pro set hit = hit + 1 where bno = #{bno}
+    </update>
 
 
 

@@ -58,6 +58,7 @@ public class BoardListController {
     @GetMapping("/view")
     public String BoardView(@RequestParam("bno") int bno, Model model) throws Exception{
         BoardVO board = boardMapper.boardView(bno);
+        boardMapper.boardHit(bno);
         model.addAttribute("board", board);
         return "view";
 

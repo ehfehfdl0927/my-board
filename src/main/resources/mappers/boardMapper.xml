@@ -34,8 +34,8 @@
         <choose >
             <when test="search_option == 'all'">
 
-                where writer like CONCAT('%',#{keyword},'%') order by bno desc
-                or subject like CONCAT('%',#{keyword},'%') order by bno desc
+                where writer like CONCAT('%',#{keyword},'%')
+                or subject like CONCAT('%',#{keyword},'%')
                 or content like CONCAT('%',#{keyword},'%') order by bno desc
             </when>
             <otherwise>

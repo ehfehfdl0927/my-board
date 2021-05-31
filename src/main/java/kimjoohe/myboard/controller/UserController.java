@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class UserController {
     @Autowired
-    //private BoardMapper boardMapper;
     private UserMapper userMapper;
 
     @GetMapping("/join")

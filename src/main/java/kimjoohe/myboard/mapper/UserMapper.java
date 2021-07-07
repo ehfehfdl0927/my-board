@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 public interface UserMapper {
     public void userJoin(userVO user) throws Exception;
     public int idChk(String userID) throws Exception;
+    public userVO userLogin(String userID) throws Exception;
 }

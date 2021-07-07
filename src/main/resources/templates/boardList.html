@@ -4,6 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="/libs/css/bootstrap.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="/libs/js/bootstrap.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function (){
+           $("li:not(:has( a ))").css("display","none");
+        });
+    </script>
     <style>
         tr td:first-child,
         tr th:first-child {
@@ -15,7 +23,6 @@
             border-top-left-radius: 6px;
             border-bottom-left-radius: 6px;
         }
-
     </style>
 </head>
 <body>
@@ -41,6 +48,7 @@
                 <th>글 작성자</th>
                 <th>글 제목</th>
                 <th>날짜</th>
+                <th> </th>
             </tr>
             </thead>
             <tbody>
@@ -49,6 +57,7 @@
                 <td th:text="${board.writer}"></td>
                 <td th:text="${board.subject}"></td>
                 <td th:text="${board.reg_date}"></td>
+                <td th:if="${board.notice == 1}">공지글</td>
             </tr>
 
             </tbody>
@@ -56,8 +65,26 @@
         <button type="button" onclick="location.href='write'" >글쓰기</button>
     </div>
 
+    <div style="display: block; text-align: center;">
+        <ul class="pagination" style="margin: 0 auto;">
+        <li th:if="${startPage != 1}"><a th:href="@{/board(pageNumber=${startPage} - 1)}">&lt;</a></li>
+        <li th:if="${startPage == 1}"><a style="color: gray;">&lt;</a></li>
+        <li th:if="${startPage >0 and page != 1 and page > startPage}" th:each="idx,iterStat : ${#numbers.sequence(startPage, page - 1)}">
+            <a th:if="${idx > 0 and page != 1}" th:href="@{/board(pageNumber=${idx})}" th:text="${idx}"> </a>
+        </li>
+        <li><a th:href="@{/board(pageNumber=${page})}" th:text="${page}" style="background-color: #006DCC;"></a></li>
+        <li th:if="${count > 0}" th:each="idx,iterStat : ${#numbers.sequence(page + 1, target2 + page )}" >
+            <a th:if="${idx < startPage + 10 and idx > page}" th:href="@{/board(pageNumber=${idx})}" th:text="${idx}"></a>
+        </li>
+        <li th:if="${target2 >= 1 and target2 + page > startPage + 9}">
+            <a th:href="@{/board(pageNumber=${startPage + 10})}">></a>
+        </li>
+        <li th:if="${target2 + page <= startPage + 9}">
+            <a style="color: gray;">></a>
+        </li>
+        </ul>
+    </div>
 </div>
-
 
 </body>
 </html>

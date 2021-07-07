@@ -4,6 +4,7 @@ public class userVO {
     private String userID;
     private String userPassword;
     private String userEmail;
+    private int manager;
 
     public String getUserID() {
         return userID;
@@ -27,5 +28,13 @@ public class userVO {
 
     public void setUserEmail(String userEmail) {
         this.userEmail = userEmail;
+    }
+
+    public int getManager() {
+        return manager;
+    }
+
+    public void setManager(int manager) {
+        this.manager = manager;
     }
 }

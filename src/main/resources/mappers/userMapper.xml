@@ -6,9 +6,13 @@
     <insert id="userJoin" parameterType="kimjoohe.myboard.domain.userVO">
         insert into user_pro
         values
-            (#{userID},#{userPassword},#{userEmail})
+            (#{userID},#{userPassword},#{userEmail},0)
     </insert>
     <select id="idChk" parameterType="String" resultType="int">
         select count(*) from user_pro where userID = #{userID}
+    </select>
+
+    <select id="userLogin" parameterType="String" resultType="kimjoohe.myboard.domain.userVO">
+        select * from user_pro where userID = #{userID}
     </select>
 </mapper>

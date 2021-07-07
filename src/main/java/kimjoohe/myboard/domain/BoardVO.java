@@ -9,6 +9,7 @@ public class BoardVO {
     private String writer;
     private Date reg_date;
     private int hit;
+    private int notice;
 
     public int getBno() {
         return bno;
@@ -57,4 +58,8 @@ public class BoardVO {
     public void setHit(int hit) {
         this.hit = hit;
     }
+
+    public int getNotice() { return notice; }
+
+    public void setNotice(int notice) { this.notice = notice; }
 }

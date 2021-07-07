@@ -4,6 +4,7 @@ public class WriteForm {
     private String writer;
     private String subject;
     private String content;
+    private String notice;
 
     public String getWriter() {
         return writer;
@@ -27,5 +28,13 @@ public class WriteForm {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getNotice() {
+        return notice;
+    }
+
+    public void setNotice(String notice) {
+        this.notice = notice;
     }
 }

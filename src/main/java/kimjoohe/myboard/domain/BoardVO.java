@@ -10,6 +10,8 @@ public class BoardVO {
     private Date reg_date;
     private int hit;
     private int notice;
+    private String kind;
+    private String realm;
 
     public int getBno() {
         return bno;
@@ -62,4 +64,20 @@ public class BoardVO {
     public int getNotice() { return notice; }
 
     public void setNotice(int notice) { this.notice = notice; }
+
+    public String getKind() {
+        return kind;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
+    }
+
+    public String getRealm() {
+        return realm;
+    }
+
+    public void setRealm(String realm) {
+        this.realm = realm;
+    }
 }

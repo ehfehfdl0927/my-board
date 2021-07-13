@@ -5,6 +5,8 @@ public class WriteForm {
     private String subject;
     private String content;
     private String notice;
+    private String kind;
+    private String realm;
 
     public String getWriter() {
         return writer;
@@ -36,5 +38,21 @@ public class WriteForm {
 
     public void setNotice(String notice) {
         this.notice = notice;
+    }
+
+    public String getKind() {
+        return kind;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
+    }
+
+    public String getRealm() {
+        return realm;
+    }
+
+    public void setRealm(String realm) {
+        this.realm = realm;
     }
 }

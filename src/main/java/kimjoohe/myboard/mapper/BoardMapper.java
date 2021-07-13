@@ -11,14 +11,15 @@ import java.util.List;
 @Repository
 public interface BoardMapper {
     public  void boardInsert(BoardVO board) throws Exception;
-    public List<BoardVO> boardList(int off) throws Exception;
-    public BoardVO boardView(int bno) throws Exception;
+    public List<BoardVO> boardList(@Param("off") int off, @Param("kind") String kind, @Param("realm") String realm) throws Exception;
+    public BoardVO boardView(@Param("bno") int bno, @Param("kind") String kind, @Param("realm") String realm) throws Exception;
     public void boardUpdate(BoardVO board) throws Exception;
-    public void boardDelete(int bno) throws Exception;
-    public List<BoardVO> boardSearch(@Param("search_option") String search_option, @Param("keyword") String keyword) throws Exception;
+    public void boardDelete(@Param("bno") int bno, @Param("kind") String kind, @Param("realm") String realm, @Param("writer") String writer) throws Exception;
+    public List<BoardVO> boardSearch(@Param("search_option") String search_option, @Param("keyword") String keyword, @Param("kind") String kind, @Param("realm") String realm, @Param("off") int off) throws Exception;
     public void boardHit(int bno) throws Exception;
     public int targetPage(@Param("target") int target) throws Exception;
-    public int boardCount() throws Exception;
+    public int boardCount(@Param("kind") String kind, @Param("realm") String realm) throws Exception;
+    public int searchCount(@Param("search_option") String search_option, @Param("keyword") String keyword, @Param("kind") String kind, @Param("realm") String realm)throws Exception;
     //public void userJoin(userVO user) throws Exception;
     //public int idChk(String userID) throws Exception;
 }

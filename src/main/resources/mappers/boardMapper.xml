@@ -7,25 +7,25 @@
     <insert id="boardInsert" parameterType="kimjoohe.myboard.domain.BoardVO">
         insert into board_pro
             values
-        (#{bno},#{subject},#{content},#{writer},now(),0,#{notice})
+        (#{bno},#{subject},#{content},#{writer},now(),0,#{notice},#{kind},#{realm})
     </insert>
 
 
-    <select id="boardList" parameterType="int" resultType="kimjoohe.myboard.domain.BoardVO">
-        select * from board_pro order by notice desc, bno desc limit 20 offset #{off};
+    <select id="boardList" parameterType="map" resultType="kimjoohe.myboard.domain.BoardVO">
+        select * from board_pro where kind = #{kind} and realm = #{realm} order by notice desc, bno desc limit 20 offset #{off};
     </select>
 
-    <select id="boardView" resultType="kimjoohe.myboard.domain.BoardVO" >
-         select * from board_pro where bno = #{bno}
+    <select id="boardView" parameterType="map" resultType="kimjoohe.myboard.domain.BoardVO" >
+         select * from board_pro where bno = #{bno} and kind = #{kind} and realm = #{realm}
     </select>
 
     <update id="boardUpdate" parameterType="kimjoohe.myboard.domain.BoardVO">
         update board_pro set subject = #{subject}, content = #{content}
-        where bno = #{bno}
+        where bno = #{bno} and kind = #{kind} and realm = #{realm}
     </update>
 
-    <delete id="boardDelete" parameterType="int">
-        delete from board_pro where bno = #{bno}
+    <delete id="boardDelete" parameterType="map">
+        delete from board_pro where bno = #{bno} and kind = #{kind} and realm = #{realm} and writer = #{writer}
     </delete>
 
     <select id="boardSearch" parameterType="map" resultType="kimjoohe.myboard.domain.BoardVO">
@@ -36,10 +36,12 @@
 
                 where writer like CONCAT('%',#{keyword},'%')
                 or subject like CONCAT('%',#{keyword},'%')
-                or content like CONCAT('%',#{keyword},'%') order by bno desc
+                or content like CONCAT('%',#{keyword},'%')
+                and kind = #{kind} and realm = #{realm} order by notice desc, bno desc limit 20 offset #{off}
             </when>
             <otherwise>
-                where ${search_option} like CONCAT('%',#{keyword},'%') order by bno desc
+                where ${search_option} like CONCAT('%',#{keyword},'%')
+                and kind = #{kind} and realm = #{realm} order by notice desc, bno desc limit 20 offset #{off}
             </otherwise>
         </choose>
     </select>
@@ -52,8 +54,25 @@
         select count(bno) from board_pro where bno >= #{target}
     </select>
 
-    <select id="boardCount" resultType="int">
+    <select id="boardCount" parameterType="map" resultType="int">
+        select count(*) from board_pro where kind = #{kind} and realm = #{realm}
+    </select>
+
+    <select id="searchCount" parameterType="map" resultType="int">
         select count(*) from board_pro
+        <choose >
+            <when test="search_option == 'all'">
+
+                where writer like CONCAT('%',#{keyword},'%')
+                or subject like CONCAT('%',#{keyword},'%')
+                or content like CONCAT('%',#{keyword},'%')
+                and kind = #{kind} and realm = #{realm}
+            </when>
+            <otherwise>
+                where ${search_option} like CONCAT('%',#{keyword},'%')
+                and kind = #{kind} and realm = #{realm}
+            </otherwise>
+        </choose>
     </select>
 
 </mapper>

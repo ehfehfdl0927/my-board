@@ -18,6 +18,8 @@
                 <tr>글 제목:<input type="text" th:value="${board.subject}" id="subject" name="subject"/><br></tr>
                 <tr><label for="content">내용</label><br></tr>
                 <tr><textarea th:text="${board.content}" id="content" name="content" rows="10" maxlength="2048"  style="width: 80%" ></textarea><br></tr>
+                <input type="hidden" name="kind" id="kind" th:value="${board.kind}">
+                <input type="hidden" name="realm" id="realm" th:value="${board.realm}">
                 <button type="submit">수정완료</button>
 
             </form>

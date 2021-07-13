@@ -16,6 +16,8 @@
         <label th:if="${user.manager == 1}">공지글 여부</label><input th:if="${user.manager == 1}" type="checkbox" id="notice" name="notice" value="1" ><br>
         <label for="content">내용</label><br>
         <textarea  id="content" name="content" placeholder="내용을 입력하세요" rows="10" maxlength="2048"  style="width: 80%"></textarea><br>
+        <input type="hidden" name="kind" id="kind" th:value="${kind}">
+        <input type="hidden" name="realm" id="realm" th:value="${realm}">
     </div>
     <button type="submit">등록</button>
 </form>

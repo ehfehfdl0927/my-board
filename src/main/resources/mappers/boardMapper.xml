@@ -7,7 +7,7 @@
     <insert id="boardInsert" parameterType="kimjoohe.myboard.domain.BoardVO">
         insert into board_pro
             values
-        (#{bno},#{subject},#{content},#{writer},now(),0,#{notice},#{kind},#{realm})
+        (#{bno},#{subject},#{content},#{writer},now(),0,#{notice},#{kind},#{realm},0)
     </insert>
 
 
@@ -75,4 +75,30 @@
         </choose>
     </select>
 
+    <select id="recommendCheck" parameterType="map" resultType="int">
+        select exists (select userID from board_recommend where kind = #{kind} and realm = #{realm} and bno = #{bno} and userID = #{userID}) as success
+    </select>
+
+    <update id="recommendAdd" parameterType="int">
+        update board_pro set recommend = recommend + 1 where bno = #{bno}
+    </update>
+
+    <update id="recommendSubtract" parameterType="int">
+        update board_pro set recommend = recommend - 1 where bno = #{bno}
+    </update>
+
+    <insert id="recommendInsert" parameterType="map">
+        insert into board_recommend
+        values
+        (#{kind},#{realm},#{bno},#{userID})
+    </insert>
+
+    <delete id="recommendDelete" parameterType="map">
+        delete from board_recommend where kind = #{kind} and realm = #{realm} and bno = #{bno} and userID = #{userID}
+    </delete>
+
+    <select id="HotTopicList" parameterType="map" resultType="kimjoohe.myboard.domain.BoardVO">
+        select * from board_pro where reg_date > DATE_ADD(now(),INTERVAL -24 hour) and kind = #{kind} and realm = #{realm}
+        order by hit + recommend desc, bno desc limit 5 offset 0;
+    </select>
 </mapper>

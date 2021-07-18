@@ -13,6 +13,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +68,15 @@ public class BoardListController {
             target2 = 0;
         }
         int resultCount = count - (page * 20); //현재페이지 이후부터의 남은 게시물 갯수
+        List<BoardVO> hotTopic = boardMapper.HotTopicList(kind,realm);
+        List<String> hotContentList = new ArrayList<String>();
+        for(int i=0; i < hotTopic.size(); i ++){
+            String hotContent = hotTopic.get(i).getContent();
+            if(hotContent.length() > 55){
+                hotContent = hotContent.substring(0,55);
+            }
+            hotContentList.add(hotContent);
+        }
         model.addAttribute("board", board); //게시물 메퍼에 boardList 로 얻은 결과를 리스트로 담아서 boardList.html로 전달
         model.addAttribute("target", target1);
         model.addAttribute("startPage", startPage);
@@ -75,6 +85,21 @@ public class BoardListController {
         model.addAttribute("target2", target2);
         model.addAttribute("kind",kind); //새로
         model.addAttribute("realm",realm);//새로
+        if(hotTopic.size() >= 1) model.addAttribute("hotTopic1",hotTopic.get(0));
+        else model.addAttribute("hotTopic1","non");
+        if(hotTopic.size() >= 2) model.addAttribute("hotTopic2",hotTopic.get(1));
+        else model.addAttribute("hotTopic2","non");
+        if(hotTopic.size() >= 3) model.addAttribute("hotTopic3",hotTopic.get(2));
+        else model.addAttribute("hotTopic3","non");
+        if(hotTopic.size() >= 4) model.addAttribute("hotTopic4",hotTopic.get(3));
+        else model.addAttribute("hotTopic4","non");
+        if(hotTopic.size() >= 5) model.addAttribute("hotTopic5",hotTopic.get(4));
+        else model.addAttribute("hotTopic5","non");
+        if(hotContentList.size() >=1) model.addAttribute("hotContent1", hotContentList.get(0));
+        if(hotContentList.size() >=2) model.addAttribute("hotContent2", hotContentList.get(1));
+        if(hotContentList.size() >=3) model.addAttribute("hotContent3", hotContentList.get(2));
+        if(hotContentList.size() >=4) model.addAttribute("hotContent4", hotContentList.get(3));
+        if(hotContentList.size() >=5) model.addAttribute("hotContent5", hotContentList.get(4));
         return "boardList";
     }
 
@@ -123,9 +148,19 @@ public class BoardListController {
     }
 
     @GetMapping("/view")    //글 상세보기
-    public String BoardView(@RequestParam("bno") int bno, @RequestParam("kind") String kind, @RequestParam("realm") String realm, Model model) throws Exception{
+    public String BoardView(@RequestParam("bno") int bno, @RequestParam("kind") String kind, @RequestParam("realm") String realm, Model model, HttpSession session) throws Exception{
+        String userID = (String)session.getAttribute("id");
+        if(userID == null){
+            model.addAttribute("msg","로그인이 되어있지 않습니다.");
+            model.addAttribute("url","login"); //메세지와 url을 모델로 담아 알림창을 띄울 alert.html로 전달
+            return "alert";
+        }
         boardMapper.boardHit(bno); //게시물 메퍼의 해당 게시물 조회수 증가 메소드 실행
         BoardVO board = boardMapper.boardView(bno,kind,realm); //파라미터로 받은 bno를 담아 게시물 메퍼의 boardView 메소드 실행된 결과를 board에 저장
+        int recommendCheck = boardMapper.recommendCheck(kind,realm,bno,userID);
+        userVO user = userMapper.userLogin(userID);
+        model.addAttribute("user",user);
+        model.addAttribute("recommendCheck",recommendCheck);
         model.addAttribute("board", board); //저장된 board 객체를 모델로 담아 view.html로 전달
         return "view";
 
@@ -166,7 +201,8 @@ public class BoardListController {
     @GetMapping("/delete")  //글 삭제
     public String BoardDelete(@RequestParam("bno") int bno, @RequestParam("kind") String kind, @RequestParam("realm") String realm, @RequestParam("writer") String writer, Model model, HttpSession session) throws Exception{
         String userID = (String)session.getAttribute("id");
-        if(!userID.equals(writer)){
+        userVO user = userMapper.userLogin(userID);
+        if(!userID.equals(writer) && user.getManager()==0){
             model.addAttribute("msg","접근할 수 없습니다.");
             model.addAttribute("url","board?kind="+kind+"&realm="+realm);
             return "alert";
@@ -275,9 +311,26 @@ public class BoardListController {
         return "search";
     }
 
-
-
-
+    @ResponseBody
+    @RequestMapping(value = "/recommend", method = RequestMethod.POST)
+    public int recommend(HttpServletRequest req) throws Exception{
+        String kind = req.getParameter("kind");
+        String realm = req.getParameter("realm");
+        String userID = req.getParameter("id");
+        int bno = Integer.parseInt(req.getParameter("bno"));
+        BoardVO board = boardMapper.boardView(bno,kind,realm);
+        int recommend = board.getRecommend();
+        int check = boardMapper.recommendCheck(kind,realm,bno,userID);
+        if(check == 0){
+            boardMapper.recommendAdd(bno);
+            boardMapper.recommendInsert(kind,realm,bno,userID);
+            return recommend + 1;
+        } else {
+            boardMapper.recommendDelete(kind,realm,bno,userID);
+            boardMapper.recommendSubtract(bno);
+            return recommend - 1;
+        }
+    }
 
 
 }

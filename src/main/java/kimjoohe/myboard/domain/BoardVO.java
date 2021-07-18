@@ -12,6 +12,7 @@ public class BoardVO {
     private int notice;
     private String kind;
     private String realm;
+    private int recommend;
 
     public int getBno() {
         return bno;
@@ -79,5 +80,13 @@ public class BoardVO {
 
     public void setRealm(String realm) {
         this.realm = realm;
+    }
+
+    public int getRecommend() {
+        return recommend;
+    }
+
+    public void setRecommend(int recommend) {
+        this.recommend = recommend;
     }
 }

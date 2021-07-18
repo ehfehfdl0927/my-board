@@ -4,7 +4,36 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>
 </head>
+<script type="text/javascript">
+    $(document).ready(function (){
+        if($("#recommendCheck").val() != 0){
+            $("#heart").attr("src","/img/heart2.png");
+        }
+    });
+
+    function recommendChek(){
+        $.ajax({
+            url: "/recommend",
+            type: "POST",
+            dataType:"json",
+            data: {id: $("#user").val(),
+            recommend: $("#recommend").val(),
+            bno: $("#bno").val(),
+            kind: $("#kind").val(),
+            realm: $("#realm").val()},
+            success: function (data){
+                $("#is_recommend").text(data);
+                if($("#heart").attr("src")=="/img/heart1.png"){
+                    $("#heart").attr("src","/img/heart2.png");
+                }else{
+                    $("#heart").attr("src","/img/heart1.png");
+                }
+            }
+        });
+    }
+</script>
 <body>
 <div class="container">
     <div>
@@ -17,16 +46,23 @@
 
                 <tr>글 번호: <input type="number"  th:value="${board.bno}" id="bno" name="bno" readonly/></tr>
                 <tr>작성자: <input type="text" th:value="${board.writer}" name="writer" id="writer" readonly/></tr>
-                <tr>조회수: <input type="text" th:value="${board.hit}" readonly> <br></tr>
+                <tr>조회수: <input type="text" th:value="${board.hit}" readonly></tr>
+                <tr><button type="button" style="margin-left: 20px;" onclick="recommendChek();">
+                    <img id="heart" src="/img/heart1.png" style="width:13px; margin-top: 3px;">
+                    <a th:text="${board.recommend}" style="margin-left: 1px;" id="is_recommend"></a></button><br></tr>
                 <tr>글 제목: <input type="text" th:value="${board.subject}" id="subject" name="subject" readonly/><br></tr>
                 <tr>날짜: <input type="text" th:value="${board.reg_date}" readonly/><br></tr>
                 <tr><label for="content">내용: </label><br></tr>
                 <tr><textarea th:text="${board.content}" id="content" name="content"  rows="10" maxlength="2048"  style="width: 80%" readonly></textarea><br></tr>
                 <input type="hidden" name="kind" id="kind" th:value="${board.kind}">
                 <input type="hidden" name="realm" id="realm" th:value="${board.realm}">
+                <input type="hidden" name="user" id="user" th:value="${session.id}">
+                <input type="hidden" id="recommendCheck" th:value="${recommendCheck}">
+                <input type="hidden" name="recommend" id="recommend" th:value="${board.recommend}">
                 <a href="javascript:history.back()"><button type="button" >목록</button></a>
                 <button th:if="${session.id == board.writer}" type="submit">수정</button>
-                <a th:if="${session.id == board.writer}" th:href="@{/delete(bno=${board.bno},kind=${board.kind},realm=${board.realm},writer=${board.writer})}"><button type="button">삭제</button></a>
+                <a th:if="${session.id == board.writer or user.manager == 1}" th:href="@{/delete(bno=${board.bno},kind=${board.kind},realm=${board.realm},writer=${board.writer})}"><button type="button">삭제</button></a>
+
 
 
             </form>

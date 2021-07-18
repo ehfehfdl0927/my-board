@@ -56,7 +56,7 @@ public class UserController {
             if(user.getUserPassword().equals(userPassword)){
                 HttpSession session = request.getSession();
                 session.setAttribute("id",userID);
-                return "ff";
+                return "mainpage";
             }
             model.addAttribute("msg","비밀번호가 틀립니다.");
             model.addAttribute("url","login");
@@ -68,13 +68,10 @@ public class UserController {
         return "alert";
     }
 
-    @PostMapping("/LogoutAction")
-    public String logoutAction(HttpSession session){
+
+    @GetMapping("/logoutAction")
+    public String LogoutAction(HttpSession session){
         session.invalidate();
         return "login";
-    }
-    @GetMapping("/Logout")
-    public String logout(HttpSession session){
-        return "ff";
     }
 }

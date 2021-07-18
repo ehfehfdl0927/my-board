@@ -20,6 +20,12 @@ public interface BoardMapper {
     public int targetPage(@Param("target") int target) throws Exception;
     public int boardCount(@Param("kind") String kind, @Param("realm") String realm) throws Exception;
     public int searchCount(@Param("search_option") String search_option, @Param("keyword") String keyword, @Param("kind") String kind, @Param("realm") String realm)throws Exception;
+    public int recommendCheck(@Param("kind") String kind, @Param("realm") String realm, @Param("bno") int bno, @Param("userID") String userID ) throws Exception;
+    public void recommendAdd(int bno) throws Exception;
+    public void recommendSubtract(int bno) throws Exception;
+    public void recommendInsert(@Param("kind") String kind, @Param("realm") String realm, @Param("bno") int bno, @Param("userID") String userID) throws Exception;
+    public void recommendDelete(@Param("kind") String kind, @Param("realm") String realm, @Param("bno") int bno, @Param("userID") String userID) throws Exception;
+    public List<BoardVO> HotTopicList(@Param("kind") String kind, @Param("realm") String realm) throws Exception;
     //public void userJoin(userVO user) throws Exception;
     //public int idChk(String userID) throws Exception;
 }

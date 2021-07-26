@@ -1,22 +1,28 @@
 package kimjoohe.myboard.controller;
 
 import kimjoohe.myboard.domain.BoardVO;
+import kimjoohe.myboard.domain.CommentVO;
+import kimjoohe.myboard.domain.FileVO;
 import kimjoohe.myboard.domain.userVO;
 import kimjoohe.myboard.mapper.BoardMapper;
 import kimjoohe.myboard.mapper.UserMapper;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import java.util.Locale;
 
 //@RestController
 @Controller
@@ -104,12 +110,13 @@ public class BoardListController {
     }
 
     @PostMapping("board")   //게시물 리스트 가져오기 post방식 글쓰기 완료후 폼 액션
-    public String WriteAction(WriteForm form, RedirectAttributes redirect, HttpSession session, Model model) throws Exception{
+    public String WriteAction(WriteForm form, RedirectAttributes redirect, HttpSession session, Model model, @RequestPart MultipartFile files, HttpServletRequest request) throws Exception{
         BoardVO board = new BoardVO();
         board.setWriter(form.getWriter());  //BoardVO형 도메인 모델에 폼 데이터 담기
         board.setSubject(form.getSubject());
         board.setContent(form.getContent());
         String notice = form.getNotice();
+        int board_bno = form.getBno();
         String userID = (String) session.getAttribute("id");
         userVO user = userMapper.userLogin(userID);
         if(notice == null){
@@ -127,7 +134,27 @@ public class BoardListController {
         board.setKind(form.getKind());
         board.setRealm(form.getRealm());
 
-        boardMapper.boardInsert(board); // 저장된 board 객체를 파라미터로 담아 게시물 메퍼에 boardInsert 실행
+        boardMapper.boardInsert(board);
+
+            String fileName = files.getOriginalFilename();
+            String fileNameExtension = FilenameUtils.getExtension(fileName).toLowerCase();
+            File destinationFile;
+            String destinationFileName;
+            String fileUrl = "C:\\test1\\";
+            do{
+            destinationFileName = RandomStringUtils.randomAlphanumeric(32) + "." + fileNameExtension;
+            destinationFile = new File(fileUrl + destinationFileName);
+
+            } while (destinationFile.exists());
+            destinationFile.getParentFile().mkdirs();
+            files.transferTo(destinationFile);
+        FileVO file = new FileVO();
+        file.setBno(board_bno);
+        file.setFilename(destinationFileName);
+        file.setFileoriginname(fileName);
+        file.setFileurl(fileUrl);
+        boardMapper.fileInsert(file);
+
         redirect.addAttribute("kind", form.getKind());
         redirect.addAttribute("realm", form.getRealm());
         return "redirect:/board";
@@ -141,9 +168,11 @@ public class BoardListController {
             return "alert";
         }
         userVO user = userMapper.userLogin(id);
+        int maxBno = boardMapper.selectMax() + 1;
         model.addAttribute("user",user);
         model.addAttribute("kind", kind);
         model.addAttribute("realm",realm);
+        model.addAttribute("maxBno", maxBno);
         return "write";
     }
 
@@ -162,6 +191,22 @@ public class BoardListController {
         model.addAttribute("user",user);
         model.addAttribute("recommendCheck",recommendCheck);
         model.addAttribute("board", board); //저장된 board 객체를 모델로 담아 view.html로 전달
+        if(boardMapper.fileDetail(bno) != null){
+            model.addAttribute("file", boardMapper.fileDetail(bno));
+            model.addAttribute("fileExistence","yes");
+        }
+        else {
+            FileVO file = new FileVO();
+            file.setFileoriginname("no");
+            model.addAttribute("file",file);
+            model.addAttribute("fileExistence","no");
+        }
+
+        List<CommentVO> commentList = boardMapper.CommentList(bno);
+        int commentCount = boardMapper.CommentCount(bno);
+        model.addAttribute("commentCount",commentCount);
+        model.addAttribute("commentList",commentList);
+
         return "view";
 
     }
@@ -169,6 +214,7 @@ public class BoardListController {
     @PostMapping("/update")    //글 수정
     public String Update(UpdateForm form, Model model, HttpSession session) throws Exception{
         String userID = (String)session.getAttribute("id");
+        String filename = null;
         if(!userID.equals(form.getWriter())){
             model.addAttribute("msg","접근할 수 없습니다.");
             model.addAttribute("url","board?kind="+form.getKind()+"&realm="+form.getRealm());
@@ -180,12 +226,14 @@ public class BoardListController {
         board.setContent(form.getContent());
         board.setKind(form.getKind());
         board.setRealm(form.getRealm());
+        filename = form.getFilename();
         model.addAttribute("board",board); //저장된 board 객체를 모델로 담아 update.html로 전달
+        model.addAttribute("filename",filename);
         return "update";
     }
 
     @PostMapping("/UpdateAction")    //글 수정 폼 액션
-    public String UpdateAction(UpdateForm form, RedirectAttributes redirect) throws Exception{
+    public String UpdateAction(UpdateForm form, RedirectAttributes redirect, @RequestPart MultipartFile files) throws Exception{
         BoardVO board = new BoardVO();
         board.setBno(form.getBno()); //BoardVO형 도메인 모델에 폼 데이터 담기
         board.setSubject(form.getSubject());
@@ -193,6 +241,26 @@ public class BoardListController {
         board.setKind(form.getKind());
         board.setRealm(form.getRealm());
         boardMapper.boardUpdate(board); //저장된 board 객체를 파라미터로 담아 게시물 메퍼에 boardUpdate 메소드 실행
+
+        int bno = form.getBno();
+        String fileName = files.getOriginalFilename();
+        String fileNameExtension = FilenameUtils.getExtension(fileName).toLowerCase();
+        File destinationFile;
+        String destinationFileName;
+        String fileUrl = "C:\\test1\\";
+        do{
+            destinationFileName = RandomStringUtils.randomAlphanumeric(32) + "." + fileNameExtension;
+            destinationFile = new File(fileUrl + destinationFileName);
+
+        } while (destinationFile.exists());
+        destinationFile.getParentFile().mkdirs();
+        files.transferTo(destinationFile);
+        FileVO file = new FileVO();
+        file.setBno(bno);
+        file.setFilename(destinationFileName);
+        file.setFileoriginname(fileName);
+        file.setFileurl(fileUrl);
+        boardMapper.fileUpdate(file);
         redirect.addAttribute("kind", form.getKind());
         redirect.addAttribute("realm", form.getRealm());
         return "redirect:/board"; //("/board")로 매핑된 get메소드 실행
@@ -330,6 +398,115 @@ public class BoardListController {
             boardMapper.recommendSubtract(bno);
             return recommend - 1;
         }
+    }
+
+    @GetMapping("/fileDown")
+    public void fileDown(@RequestParam("bno") int bno,HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, Exception{
+        request.setCharacterEncoding("UTF-8");
+        FileVO fileVO = boardMapper.fileDetail(bno);
+        try {
+            String fileUrl = fileVO.getFileurl();
+            System.out.println(fileUrl);
+            fileUrl += "/";
+            String savePath = fileUrl;
+            String fileName = fileVO.getFilename();
+
+            //실제 내보낼 파일명
+            String originFileName = fileVO.getFileoriginname();
+            InputStream in = null;
+            OutputStream os = null;
+            File file= null;
+            Boolean skip = false;
+            String client = "";
+
+            //파일을 읽어 스트림에 담기
+            try {
+                file = new File(savePath, fileName);
+                in = new FileInputStream(file);
+            } catch (FileNotFoundException fe) {
+                skip = true;
+            }
+
+            client = request.getHeader("User-Agent");
+
+            //파일 다운로드 헤더 지정
+            response.reset();
+            response.setContentType("application/octet-stream");
+            response.setHeader("Content-Description", "HTML Generated Data");
+
+            if(!skip) {
+                //IE
+                if(client.indexOf("MSIE") != -1) {
+                    response.setHeader("Content-Disposition", "attachment; filename=\""
+                            + java.net.URLEncoder.encode(originFileName, "UTF-8").replaceAll("\\+", "\\ ") + "\"");
+                    //IE 11 이상
+                } else if (client.indexOf("Trident") != -1) {
+                    response.setHeader("Content-Disposition", "attachment; filename=\""
+                            + java.net.URLEncoder.encode(originFileName, "UTF-8").replaceAll("\\+", "\\ ") + "\"");
+                    //한글 파일명 처리
+                } else {
+                    response.setHeader("Content-Disposition", "attachment; filename=\"" +
+                            new String(originFileName.getBytes("UTF-8"), "ISO8859_1") + "\"");
+                    response.setHeader("Content-Type", "application/octet-stream; charset=utf-8");
+                }
+
+                response.setHeader("Content-Length", ""+file.length());
+                os = response.getOutputStream();
+                byte b[] = new byte[(int) file.length()];
+                int leng = 0;
+
+                while ((leng = in.read(b)) > 0) {
+                    os.write(b, 0, leng);
+                }
+            } else {
+                response.setContentType("text/html; charset=UTF-8");
+                PrintWriter out = response.getWriter();
+                out.println("<script> alert('파일을 찾을 수 없습니다.'); history.back(); </script>");
+                out.flush();
+            }
+
+            in.close();
+            os.close();
+
+        } catch (Exception e) {
+            System.out.println("ERROR : " + e.getStackTrace());
+        }
+
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/fileDelete", method = RequestMethod.POST)
+    public void fileDelete(HttpServletRequest req) throws Exception{
+        int bno = Integer.parseInt(req.getParameter("bno"));
+        boardMapper.fileDelete(bno);
+    }
+
+    @PostMapping("/commentInsert")
+    public String commentInsert(CommentForm form, RedirectAttributes redirect) throws Exception{
+        CommentVO comment = new CommentVO();
+        comment.setBno(form.getBoard_bno());
+        comment.setWriter(form.getComment_writer());
+        comment.setContent(form.getCommentContent());
+        boardMapper.CommentInsert(comment);
+        redirect.addAttribute("bno",form.getBoard_bno());
+        redirect.addAttribute("kind",form.getBoard_kind());
+        redirect.addAttribute("realm",form.getBoard_realm());
+       return "redirect:/view";
+    }
+
+
+    @PostMapping("/replyInsert")
+    public String replyInsert(CommentForm form, RedirectAttributes redirect) throws Exception{
+        CommentVO comment = new CommentVO();
+        comment.setBno(form.getBoard_bno());
+        comment.setC_sequence(form.getC_sequence());
+        comment.setWriter(form.getComment_writer());
+        comment.setContent(form.getCommentContent());
+        boardMapper.ReplyInsert(comment);
+        redirect.addAttribute("bno",form.getBoard_bno());
+        redirect.addAttribute("kind",form.getBoard_kind());
+        redirect.addAttribute("realm",form.getBoard_realm());
+        return "redirect:/view";
     }
 
 

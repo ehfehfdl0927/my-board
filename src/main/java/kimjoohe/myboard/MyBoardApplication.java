@@ -8,6 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import javax.sql.DataSource;
 
@@ -27,6 +28,14 @@ public class MyBoardApplication {
 		Resource[] res = new PathMatchingResourcePatternResolver().getResources("classpath:mappers/*Mapper.xml");
 		sessionFactory.setMapperLocations(res);
 			return  sessionFactory.getObject();
+	}
+	@Bean
+	public CommonsMultipartResolver multipartResolver(){
+		CommonsMultipartResolver multipartResolver =
+				new CommonsMultipartResolver();
+		multipartResolver.setDefaultEncoding("UTF-8");
+		multipartResolver.setMaxUploadSizePerFile(5*1024*1024);
+		return multipartResolver;
 	}
 
 }

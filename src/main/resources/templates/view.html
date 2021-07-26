@@ -5,13 +5,65 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="http://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <style>
+        table{
+            table-layout: fixed;word-break: break-all;
+        }
+        td,th{
+            border-bottom:1px solid #dddddd;
+        }
+        #modal{
+            display: none;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        #addDialog{
+            position: relative;
+            top: -500px;
+            width: 300px;
+            margin: 100px auto;
+            padding: 20px 10px;
+            background: #ffffff;
+            border: 2px solid #666;
+        }
+        .modal_layer{
+            position: fixed;
+            top:0;
+            left:0;
+            width:100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
+    </style>
 </head>
 <script type="text/javascript">
+    $(document).on("click",".open-addDialog", function (){
+        var sequence = $(this).data('id');
+        $(".modal-body #sequence").val(sequence);
+    });
+
+
     $(document).ready(function (){
+        $('#modalButton').click(function (){
+            $('#modal').css('display', 'block');
+        });
+        $('#closeButton').click(function (){
+            $('#modal').css('display', 'none');
+        });
+
         if($("#recommendCheck").val() != 0){
             $("#heart").attr("src","/img/heart2.png");
         }
+
     });
+
+    function modalShow(){
+        $('#modal').css('display', 'block');
+    }
 
     function recommendChek(){
         $.ajax({
@@ -33,6 +85,9 @@
             }
         });
     }
+
+
+
 </script>
 <body>
 <div class="container">
@@ -59,17 +114,66 @@
                 <input type="hidden" name="user" id="user" th:value="${session.id}">
                 <input type="hidden" id="recommendCheck" th:value="${recommendCheck}">
                 <input type="hidden" name="recommend" id="recommend" th:value="${board.recommend}">
+                <tr>
+                    <img th:if="${fileExistence=='yes'}" src="/img/clip.png" style="width:13px; margin-top: 3px; margin-right: 5px;"><a th:if="${fileExistence=='yes'}" th:text="${file.fileoriginname}" th:href="@{/fileDown(bno=${board.bno})}"></a>
+                </tr><br>
+                <input type="hidden" name="filename" id="filename" th:value="${file.fileoriginname}">
                 <a href="javascript:history.back()"><button type="button" >목록</button></a>
                 <button th:if="${session.id == board.writer}" type="submit">수정</button>
                 <a th:if="${session.id == board.writer or user.manager == 1}" th:href="@{/delete(bno=${board.bno},kind=${board.kind},realm=${board.realm},writer=${board.writer})}"><button type="button">삭제</button></a>
 
 
-
             </form>
+
             </tbody>
         </table>
     </div>
 
+</div>
+
+<div class="container">
+    <form action="/commentInsert" method="post">
+        <img src="/img/profile.png" style="width:13px; margin-top: 3px; margin-right: 3px;"><input style="border: none; margin-top: 10px;" type="text" id="comment_writer" name="comment_writer" th:value="|${session.id}님|"><br>
+        <textarea style="margin-top: 3px; width: 500px;" id="commentContent" name="commentContent" placeholder="댓글을 입력하세요"></textarea>
+        <input type="submit" style="margin-top: 10px; margin-bottom: 10px;" value="등록">
+        <input type="hidden" id="board_bno" name="board_bno" th:value="${board.bno}">
+        <input type="hidden" id="board_kind" name="board_kind" th:value="${board.kind}">
+        <input type="hidden" id="board_realm" name="board_realm" th:value="${board.realm}">
+    </form>
+</div>
+<div>
+    <table style="width: 80%; border: 1px solid #dddddd; border-collapse: collapse;">
+        <thead>
+        <tr>
+            <th colspan="3" style="text-align: left;"><img src="/img/comment.png" style="width:15px; margin-top: 3px; margin-right: 5px; margin-left: 5px;"><span th:text="${commentCount}"></span></th>
+        </tr>
+        </thead>
+        <tbody style="padding-top: 10px;">
+        <tr th:each="comment: ${commentList}">
+            <td colspan="2" style="text-align: left;"><span th:if="${comment.level == 1}" style="color: #808080; font-weight: bold;">ㄴ</span><img src="/img/profile.png" style="width:13px; margin-top: 3px; margin-right: 3px;"><span style="font-size: 12px;" th:text="${comment.writer}"></span><br><span th:if="${comment.level == 1}">&emsp;</span><span style="font-size: 13px; margin-top: 3px;" th:text="${comment.content}"></span><br></td><td><a data-toggle="modal" id="modalButton" th:attr="data-id=${comment.c_bno}" class="open-addDialog btn btn-primary" href="#addDialog"><button th:if="${comment.level == 0}" onclick="modalShow();">답글</button></a></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<div id="modal">
+    <div class="modal hide" id="addDialog">
+        <div class="modal-header">
+            <button class="close" id="closeButton" data-dismiss="modal">X</button>
+        </div>
+        <div class="modal-body">
+            <form action="/replyInsert" method="post">
+                <img src="/img/profile.png" style="width:13px; margin-top: 3px; margin-right: 3px;"><input style="border: none;" type="text" name="comment_writer" th:value="|${session.id}님|"><br>
+                <textarea name="commentContent" style="width: 250px;" type="text"></textarea>
+                <input type="submit" value="등록">
+                <input type="hidden" name="board_bno" th:value="${board.bno}">
+                <input type="hidden" id="sequence" name="c_sequence">
+                <input type="hidden" name="board_kind" th:value="${board.kind}">
+                <input type="hidden" name="board_realm" th:value="${board.realm}">
+            </form>
+        </div>
+    </div>
+    <div class="modal_layer">
+    </div>
 </div>
 </body>
 </html>

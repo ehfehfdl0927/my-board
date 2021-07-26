@@ -7,6 +7,7 @@ public class UpdateForm {
     private int bno;
     private String kind;
     private String realm;
+    private String filename;
 
 
     public String getSubject() {
@@ -55,5 +56,13 @@ public class UpdateForm {
 
     public void setWriter(String writer) {
         this.writer = writer;
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
 }

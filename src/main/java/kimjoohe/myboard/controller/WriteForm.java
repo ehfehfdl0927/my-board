@@ -1,5 +1,7 @@
 package kimjoohe.myboard.controller;
 
+import java.io.File;
+
 public class WriteForm {
     private String writer;
     private String subject;
@@ -7,6 +9,8 @@ public class WriteForm {
     private String notice;
     private String kind;
     private String realm;
+    private int bno;
+
 
     public String getWriter() {
         return writer;
@@ -55,4 +59,14 @@ public class WriteForm {
     public void setRealm(String realm) {
         this.realm = realm;
     }
+
+    public int getBno() {
+        return bno;
+    }
+
+    public void setBno(int bno) {
+        this.bno = bno;
+    }
+
+
 }

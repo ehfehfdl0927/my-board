@@ -7,12 +7,12 @@
     <insert id="boardInsert" parameterType="kimjoohe.myboard.domain.BoardVO">
         insert into board_pro
             values
-        (#{bno},#{subject},#{content},#{writer},now(),0,#{notice},#{kind},#{realm},0)
+        (#{bno},#{subject},#{content},#{writer},now(),0,#{notice},#{kind},#{realm},0,0)
     </insert>
 
 
     <select id="boardList" parameterType="map" resultType="kimjoohe.myboard.domain.BoardVO">
-        select * from board_pro where kind = #{kind} and realm = #{realm} order by notice desc, bno desc limit 20 offset #{off};
+        select * from board_pro where kind = #{kind} and realm = #{realm} and delete_option = 0 order by notice desc, bno desc limit 20 offset #{off};
     </select>
 
     <select id="boardView" parameterType="map" resultType="kimjoohe.myboard.domain.BoardVO" >
@@ -24,9 +24,9 @@
         where bno = #{bno} and kind = #{kind} and realm = #{realm}
     </update>
 
-    <delete id="boardDelete" parameterType="map">
-        delete from board_pro where bno = #{bno} and kind = #{kind} and realm = #{realm} and writer = #{writer}
-    </delete>
+    <update id="boardDelete" parameterType="map">
+        update board_pro set delete_option = 1 where bno = #{bno} and kind = #{kind} and realm = #{realm} and writer = #{writer}
+    </update>
 
     <select id="boardSearch" parameterType="map" resultType="kimjoohe.myboard.domain.BoardVO">
         select * from board_pro
@@ -98,7 +98,45 @@
     </delete>
 
     <select id="HotTopicList" parameterType="map" resultType="kimjoohe.myboard.domain.BoardVO">
-        select * from board_pro where reg_date > DATE_ADD(now(),INTERVAL -24 hour) and kind = #{kind} and realm = #{realm}
+        select * from board_pro where reg_date > DATE_ADD(now(),INTERVAL -24 hour) and kind = #{kind} and realm = #{realm} and delete_option = 0
         order by hit + recommend desc, bno desc limit 5 offset 0;
     </select>
+
+    <select id="selectMax" resultType="int">
+        select max(bno) from board_pro;
+    </select>
+    <insert id="fileInsert" parameterType="kimjoohe.myboard.domain.FileVO">
+        <selectKey keyProperty="bno" resultType="int" order="BEFORE">
+            select max(bno) from board_pro
+        </selectKey>
+        insert into file values (#{f_no},#{bno},#{filename},#{fileoriginname},#{fileurl})
+    </insert>
+
+    <select id="fileDetail" parameterType="int" resultType="kimjoohe.myboard.domain.FileVO">
+        select * from file where bno = #{bno}
+    </select>
+
+    <delete id="fileDelete" parameterType="int">
+        delete  from file where bno = #{bno}
+    </delete>
+
+    <insert id="fileUpdate" parameterType="kimjoohe.myboard.domain.FileVO">
+        insert into file value (#{f_no},#{bno},#{filename},#{fileoriginname},#{fileurl})
+    </insert>
+
+    <select id="CommentList" parameterType="int" resultType="kimjoohe.myboard.domain.CommentVO">
+        select * from comment where bno = #{bno} order by c_sequence desc, c_bno asc
+    </select>
+
+    <select id="CommentCount" parameterType="int" resultType="int">
+        select count(*) from comment where bno = #{bno} and delete_option = 0;
+    </select>
+
+    <insert id="CommentInsert" parameterType="kimjoohe.myboard.domain.CommentVO">
+        insert into comment values(#{bno},#{c_bno},(select ifnull(max(c_bno)+1,1) from comment a),0,now(),#{writer},#{content},#{delete_option});
+    </insert>
+    
+    <insert id="ReplyInsert" parameterType="kimjoohe.myboard.domain.CommentVO">
+        insert into comment values(#{bno}, #{c_bno}, #{c_sequence},1,now(),#{writer},#{content},#{delete_option})
+    </insert>
 </mapper>

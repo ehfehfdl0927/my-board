@@ -38,6 +38,24 @@
             z-index: -1;
         }
 
+
+        #modal2{
+            display: none;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        #addDialog2{
+            position: relative;
+            top: -500px;
+            width: 300px;
+            margin: 100px auto;
+            padding: 20px 10px;
+            background: #ffffff;
+            border: 2px solid #666;
+        }
+
     </style>
 </head>
 <script type="text/javascript">
@@ -55,6 +73,21 @@
             $('#modal').css('display', 'none');
         });
 
+
+        $(document).on('click','#modalButton2',function (){
+            $('#modal2').css('display', 'block');
+            var content = $(this).data('content')
+            var bno = $(this).data('bno');
+            $(".modal2-body #commentContent").text(content);
+            $(".modal2-body #contentBno").val(bno);
+
+        });
+
+
+        $('#closeButton2').click(function (){
+            $('#modal2').css('display', 'none');
+        });
+
         if($("#recommendCheck").val() != 0){
             $("#heart").attr("src","/img/heart2.png");
         }
@@ -64,6 +97,7 @@
     function modalShow(){
         $('#modal').css('display', 'block');
     }
+
 
     function recommendChek(){
         $.ajax({
@@ -123,6 +157,7 @@
                 <a th:if="${session.id == board.writer or user.manager == 1}" th:href="@{/delete(bno=${board.bno},kind=${board.kind},realm=${board.realm},writer=${board.writer})}"><button type="button">삭제</button></a>
 
 
+
             </form>
 
             </tbody>
@@ -133,8 +168,8 @@
 
 <div class="container">
     <form action="/commentInsert" method="post">
-        <img src="/img/profile.png" style="width:13px; margin-top: 3px; margin-right: 3px;"><input style="border: none; margin-top: 10px;" type="text" id="comment_writer" name="comment_writer" th:value="|${session.id}님|"><br>
-        <textarea style="margin-top: 3px; width: 500px;" id="commentContent" name="commentContent" placeholder="댓글을 입력하세요"></textarea>
+        <img src="/img/profile.png" style="width:13px; margin-top: 3px; margin-right: 3px;"><input style="border: none; margin-top: 10px;" type="text" id="comment_writer" name="comment_writer" th:value="${session.id}"><br>
+        <textarea style="margin-top: 3px; width: 500px;"  name="commentContent" placeholder="댓글을 입력하세요"></textarea>
         <input type="submit" style="margin-top: 10px; margin-bottom: 10px;" value="등록">
         <input type="hidden" id="board_bno" name="board_bno" th:value="${board.bno}">
         <input type="hidden" id="board_kind" name="board_kind" th:value="${board.kind}">
@@ -150,7 +185,18 @@
         </thead>
         <tbody style="padding-top: 10px;">
         <tr th:each="comment: ${commentList}">
-            <td colspan="2" style="text-align: left;"><span th:if="${comment.level == 1}" style="color: #808080; font-weight: bold;">ㄴ</span><img src="/img/profile.png" style="width:13px; margin-top: 3px; margin-right: 3px;"><span style="font-size: 12px;" th:text="${comment.writer}"></span><br><span th:if="${comment.level == 1}">&emsp;</span><span style="font-size: 13px; margin-top: 3px;" th:text="${comment.content}"></span><br></td><td><a data-toggle="modal" id="modalButton" th:attr="data-id=${comment.c_bno}" class="open-addDialog btn btn-primary" href="#addDialog"><button th:if="${comment.level == 0}" onclick="modalShow();">답글</button></a></td>
+            <td colspan="2" style="text-align: left;">
+                <span th:if="${comment.level == 1}" style="color: #808080; font-weight: bold;">ㄴ</span><img src="/img/profile.png" style="width:13px; margin-top: 3px; margin-right: 3px;"><span style="font-size: 12px; font-weight: bold;" th:text="${comment.writer}"></span><br>
+                <span th:if="${comment.level == 1}">&emsp;</span>
+                <span style="font-size: 13px; margin-top: 3px;" th:text="${comment.content}"></span><br>
+                <span style="color: grey; font-size: 6px;" th:text="${comment.reg_date}"></span>
+            </td>
+            <td><a data-toggle="modal" id="modalButton" th:attr="data-id=${comment.c_bno}" class="open-addDialog btn btn-primary" href="#addDialog"><button th:if="${comment.level == 0}" onclick="modalShow();">답글</button></a>
+            <a data-toggle="modal" id="modalButton2" th:data-content="${comment.content}" th:data-bno="${comment.c_bno}" class="open-addDialog2 btn btn-primary" href="#addDialog2"><button th:if="${session.id == comment.writer}">수정</button></a>
+            <a th:if="${session.id == comment.writer and comment.level == 0}" th:href="@{/commentDelete(bno=${board.bno},kind=${board.kind},realm=${board.realm},writer=${comment.writer},commentSequence=${comment.c_sequence})}"><button type="button">삭제</button></a>
+            <a th:if="${session.id == comment.writer and comment.level == 1}" th:href="@{/replyDelete(bno=${board.bno},kind=${board.kind},realm=${board.realm},writer=${comment.writer},commentBno=${comment.c_bno})}"><button type="button">삭제</button></a>
+            </td>
+
         </tr>
         </tbody>
     </table>
@@ -162,7 +208,7 @@
         </div>
         <div class="modal-body">
             <form action="/replyInsert" method="post">
-                <img src="/img/profile.png" style="width:13px; margin-top: 3px; margin-right: 3px;"><input style="border: none;" type="text" name="comment_writer" th:value="|${session.id}님|"><br>
+                <img src="/img/profile.png" style="width:13px; margin-top: 3px; margin-right: 3px;"><input style="border: none;" type="text" name="comment_writer" th:value="${session.id}"><br>
                 <textarea name="commentContent" style="width: 250px;" type="text"></textarea>
                 <input type="submit" value="등록">
                 <input type="hidden" name="board_bno" th:value="${board.bno}">
@@ -175,5 +221,30 @@
     <div class="modal_layer">
     </div>
 </div>
+
+
+
+
+<div id="modal2">
+    <div class="modal hide" id="addDialog2">
+        <div class="modal2-header">
+            <button class="close" id="closeButton2" data-dismiss="modal">X</button>
+        </div>
+        <div class="modal2-body">
+            <form action="/commentUpdate" method="post">
+                <img src="/img/profile.png" style="width:13px; margin-top: 3px; margin-right: 3px;"><input style="border: none;" type="text" name="comment_writer" th:value="${session.id}"><br>
+                <textarea id="commentContent" name="commentContent" style="width: 250px;" type="text"></textarea>
+                <input type="submit" value="등록">
+                <input type="hidden" name="board_bno" th:value="${board.bno}">
+                <input type="hidden" name="board_kind" th:value="${board.kind}">
+                <input type="hidden" name="board_realm" th:value="${board.realm}">
+                <input type="hidden" name="c_bno" id="contentBno">
+            </form>
+        </div>
+    </div>
+    <div class="modal_layer">
+    </div>
+</div>
+
 </body>
 </html>

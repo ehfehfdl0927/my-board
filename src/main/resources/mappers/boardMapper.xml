@@ -125,7 +125,7 @@
     </insert>
 
     <select id="CommentList" parameterType="int" resultType="kimjoohe.myboard.domain.CommentVO">
-        select * from comment where bno = #{bno} order by c_sequence desc, c_bno asc
+        select * from comment where bno = #{bno} and delete_option = 0 order by c_sequence desc, c_bno asc
     </select>
 
     <select id="CommentCount" parameterType="int" resultType="int">
@@ -139,4 +139,20 @@
     <insert id="ReplyInsert" parameterType="kimjoohe.myboard.domain.CommentVO">
         insert into comment values(#{bno}, #{c_bno}, #{c_sequence},1,now(),#{writer},#{content},#{delete_option})
     </insert>
+
+    <update id="CommentUpdate" parameterType="map">
+        update comment set content = #{commentContent} where c_bno = #{commentBno}
+    </update>
+
+    <update id="ReplyDelete" parameterType="int">
+        update comment set delete_option = 1 where c_bno = #{commentBno}
+    </update>
+
+    <update id="CommentDelete" parameterType="int">
+        update comment set delete_option = 1 where c_sequence = #{commentSequence}
+    </update>
+
+    <update id="CommentSetDelete" parameterType="int">
+        update comment set delete_option = 1 where bno = #{bno}
+    </update>
 </mapper>

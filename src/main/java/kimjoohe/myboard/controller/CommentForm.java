@@ -7,6 +7,7 @@ public class CommentForm {
     private int c_sequence;
     private String board_kind;
     private String board_realm;
+    private int c_bno;
 
     public int getBoard_bno() {
         return board_bno;
@@ -54,5 +55,13 @@ public class CommentForm {
 
     public void setBoard_realm(String board_realm) {
         this.board_realm = board_realm;
+    }
+
+    public int getC_bno() {
+        return c_bno;
+    }
+
+    public void setC_bno(int c_bno) {
+        this.c_bno = c_bno;
     }
 }

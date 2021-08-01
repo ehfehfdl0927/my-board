@@ -227,6 +227,9 @@ public class BoardListController {
         board.setKind(form.getKind());
         board.setRealm(form.getRealm());
         filename = form.getFilename();
+        if(form.getFilename()==""){
+            filename = "no";
+        }
         model.addAttribute("board",board); //저장된 board 객체를 모델로 담아 update.html로 전달
         model.addAttribute("filename",filename);
         return "update";
@@ -242,25 +245,29 @@ public class BoardListController {
         board.setRealm(form.getRealm());
         boardMapper.boardUpdate(board); //저장된 board 객체를 파라미터로 담아 게시물 메퍼에 boardUpdate 메소드 실행
 
-        int bno = form.getBno();
-        String fileName = files.getOriginalFilename();
-        String fileNameExtension = FilenameUtils.getExtension(fileName).toLowerCase();
-        File destinationFile;
-        String destinationFileName;
-        String fileUrl = "C:\\test1\\";
-        do{
-            destinationFileName = RandomStringUtils.randomAlphanumeric(32) + "." + fileNameExtension;
-            destinationFile = new File(fileUrl + destinationFileName);
+            int bno = form.getBno();
+            String fileName = files.getOriginalFilename();
+            String fileNameExtension = FilenameUtils.getExtension(fileName).toLowerCase();
+            File destinationFile;
+            String destinationFileName;
+            String fileUrl = "C:\\test1\\";
+            do {
+                destinationFileName = RandomStringUtils.randomAlphanumeric(32) + "." + fileNameExtension;
+                destinationFile = new File(fileUrl + destinationFileName);
 
-        } while (destinationFile.exists());
-        destinationFile.getParentFile().mkdirs();
-        files.transferTo(destinationFile);
-        FileVO file = new FileVO();
-        file.setBno(bno);
-        file.setFilename(destinationFileName);
-        file.setFileoriginname(fileName);
-        file.setFileurl(fileUrl);
-        boardMapper.fileUpdate(file);
+            } while (destinationFile.exists());
+            destinationFile.getParentFile().mkdirs();
+            files.transferTo(destinationFile);
+            FileVO file = new FileVO();
+            file.setBno(bno);
+            file.setFilename(destinationFileName);
+            file.setFileoriginname(fileName);
+            file.setFileurl(fileUrl);
+            if(boardMapper.fileDetail(bno) != null) {
+                boardMapper.fileDelete(bno);
+            }
+            boardMapper.fileUpdate(file);
+
         redirect.addAttribute("kind", form.getKind());
         redirect.addAttribute("realm", form.getRealm());
         return "redirect:/board"; //("/board")로 매핑된 get메소드 실행
@@ -276,6 +283,7 @@ public class BoardListController {
             return "alert";
         }
         boardMapper.boardDelete(bno,kind,realm,writer); //파라미터로 받은 bno를 담아 게시물 메퍼의 boardDelete메소드 실행
+        boardMapper.CommentSetDelete(bno);
         model.addAttribute("msg","글을 삭제하였습니다.");
         model.addAttribute("url","board?kind="+kind+"&realm="+realm); //메세지와 url을 모델로 담아 알림창을 띄울 alert.html로 전달
         return "alert";
@@ -507,6 +515,52 @@ public class BoardListController {
         redirect.addAttribute("kind",form.getBoard_kind());
         redirect.addAttribute("realm",form.getBoard_realm());
         return "redirect:/view";
+    }
+
+
+    @PostMapping("/commentUpdate")
+    public String commentUpdate(CommentForm form, RedirectAttributes redirect) throws Exception{
+        int commentBno = 0;
+        String commentContent = null;
+        commentBno = form.getC_bno();
+        commentContent = form.getCommentContent();
+        boardMapper.CommentUpdate(commentBno,commentContent);
+        redirect.addAttribute("bno",form.getBoard_bno());
+        redirect.addAttribute("kind",form.getBoard_kind());
+        redirect.addAttribute("realm",form.getBoard_realm());
+        return "redirect:/view";
+    }
+
+    @GetMapping("/replyDelete")  //대댓글 삭제
+    public String replyDelete(@RequestParam("bno") int bno, @RequestParam("kind") String kind, @RequestParam("realm") String realm, @RequestParam("writer") String writer,@RequestParam("commentBno") int commentBno, Model model, HttpSession session, RedirectAttributes redirect) throws Exception{
+        String userID = (String)session.getAttribute("id");
+        if(!userID.equals(writer)){
+            model.addAttribute("msg","접근할 수 없습니다.");
+            model.addAttribute("url","board?kind="+kind+"&realm="+realm);
+            return "alert";
+        }
+        boardMapper.ReplyDelete(commentBno);
+        redirect.addAttribute("bno",bno);
+        redirect.addAttribute("kind",kind);
+        redirect.addAttribute("realm",realm);
+        return "redirect:/view";
+
+    }
+
+    @GetMapping("/commentDelete")  //대댓글 삭제
+    public String commentDelete(@RequestParam("bno") int bno, @RequestParam("kind") String kind, @RequestParam("realm") String realm, @RequestParam("writer") String writer,@RequestParam("commentSequence") int commentSequence, Model model, HttpSession session, RedirectAttributes redirect) throws Exception{
+        String userID = (String)session.getAttribute("id");
+        if(!userID.equals(writer)){
+            model.addAttribute("msg","접근할 수 없습니다.");
+            model.addAttribute("url","board?kind="+kind+"&realm="+realm);
+            return "alert";
+        }
+        boardMapper.CommentDelete(commentSequence);
+        redirect.addAttribute("bno",bno);
+        redirect.addAttribute("kind",kind);
+        redirect.addAttribute("realm",realm);
+        return "redirect:/view";
+
     }
 
 

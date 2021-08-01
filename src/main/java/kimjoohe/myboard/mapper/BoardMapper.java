@@ -60,4 +60,11 @@ public interface BoardMapper {
 
     public void ReplyInsert(CommentVO comment) throws Exception;
 
+    public void CommentUpdate(@Param("commentBno") int commentBno, @Param("commentContent") String commentContent) throws Exception;
+
+    public void ReplyDelete(@Param("commentBno") int commentBno) throws Exception;
+
+    public void CommentDelete(@Param("commentSequence") int commentSequence) throws Exception;
+
+    public void CommentSetDelete(@Param("bno") int bno) throws Exception;
 }
